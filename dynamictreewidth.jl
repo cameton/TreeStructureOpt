@@ -8,6 +8,7 @@ using Combinatorics
 using ProgressMeter
 using LinearAlgebra
 using KrylovKit
+using DataStructures
 
 function linegraph(G) 
     n = ne(G)
