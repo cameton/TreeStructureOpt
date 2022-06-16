@@ -28,9 +28,8 @@ The packages that are needed are:
 - KrylovKit
 - LRUCache
 
-Other packages that are needed for the repo will need to be added in the same way with the corresponding github links.
+### Other packages that are needed for the repo will need to be added in the same way with the corresponding github links.
 =======
-- Coarsening (github link)
-- Multilevling (github link)
-- LinearOrdering (github link, there is some issues) 
-TODO: make sure to add github links to packages.
+- Coarsening (github link) https://github.com/cameton/Coarsening.jl.git
+- Multilevling (github link) https://github.com/cameton/Multilevel.jl.git
+- LinearOrdering (github link, there is some issues but can be ignored) https://github.com/cameton/LinearOrdering.jl.git
