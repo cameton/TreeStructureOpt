@@ -177,6 +177,17 @@ function init_table!(f, table, idx...)
     return table[idx...]
 end
 
+function calcbetween(A, position_to_vertex, vertex_to_position, i, j)
+    between = zeros(j - i + 1)
+    for k in i:(j-1)
+        v = position_to_vertex[k]
+        between[k] += _weight_to_intervals(A, vertex_to_position, v, ((k+1):j,))
+        between[k] -= _weight_to_intervals(A, vertex_to_position, v, (i:k,))
+        between[k + 1] = between[k]
+    end
+    return between
+end
+
 function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, j; carving = false, flops=false)
     if i == j
         c = Coarsening.sumcol(A, position_to_vertex[i])
@@ -189,15 +200,12 @@ function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, 
     outgoing = _weight_to_intervals(A, position_to_vertex, vertex_to_position, i:j, (1:(i-1), (j+1):n) )
     best = Inf
     bestk = -1
-    between = 0
+    between = calcbetween(A, position_to_vertex, vertex_to_position, i, j)
     for k in i:(j-1)
         v = position_to_vertex[k]
 
         if !carving
-            between += _weight_to_intervals(A, vertex_to_position, v, ((k+1):j,))
-            between -= _weight_to_intervals(A, vertex_to_position, v, (i:k,))
-
-            between + outgoing < best ? nothing : continue
+            between[k] + outgoing < best ? nothing : continue
         end
 
         (l, _) = get!(cache, (i, k)) do
@@ -205,7 +213,7 @@ function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, 
         end
 
         if flops
-            2.0 ^ ( between + outgoing) + l < best ? nothing : continue
+            2.0 ^ ( between[k] + outgoing) + l < best ? nothing : continue
         end
 
         l < best ? nothing : continue
@@ -217,9 +225,9 @@ function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, 
         if carving
             testval = max(outgoing, l, r)
         elseif flops
-            testval = 2.0 ^ (outgoing + between) + l + r
+            testval = 2.0 ^ (outgoing + between[k]) + l + r
         else
-            testval = max(between + outgoing, l, r)
+            testval = max(between[k] + outgoing, l, r)
         end
 
         if testval < best
