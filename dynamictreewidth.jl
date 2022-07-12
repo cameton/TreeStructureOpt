@@ -179,11 +179,12 @@ end
 
 function calcbetween(A, position_to_vertex, vertex_to_position, i, j)
     between = zeros(j - i + 1)
-    for k in i:(j-1)
+    for l in 1:(j - i)
+        k = i + l - 1
         v = position_to_vertex[k]
-        between[k] += _weight_to_intervals(A, vertex_to_position, v, ((k+1):j,))
-        between[k] -= _weight_to_intervals(A, vertex_to_position, v, (i:k,))
-        between[k + 1] = between[k]
+        between[l] += _weight_to_intervals(A, vertex_to_position, v, ((k+1):j,))
+        between[l] -= _weight_to_intervals(A, vertex_to_position, v, (i:k,))
+        between[l + 1] = between[l]
     end
     return between
 end
