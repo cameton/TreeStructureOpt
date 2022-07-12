@@ -186,6 +186,7 @@ function calcbetween(A, position_to_vertex, vertex_to_position, i, j)
         between[l] -= _weight_to_intervals(A, vertex_to_position, v, (i:k,))
         between[l + 1] = between[l]
     end
+    between[end] = _weight_to_intervals(A, vertex_to_position, position_to_vertex[j], (i:(j-1),))
     return between
 end
 
@@ -204,9 +205,10 @@ function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, 
     between = calcbetween(A, position_to_vertex, vertex_to_position, i, j)
     for k in i:(j-1)
         v = position_to_vertex[k]
+        b = between[k - i + 1]
 
         if !carving
-            between[k] + outgoing < best ? nothing : continue
+            b + outgoing < best ? nothing : continue
         end
 
         (l, _) = get!(cache, (i, k)) do
@@ -214,7 +216,7 @@ function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, 
         end
 
         if flops
-            2.0 ^ ( between[k] + outgoing) + l < best ? nothing : continue
+            2.0 ^ ( b + outgoing) + l < best ? nothing : continue
         end
 
         l < best ? nothing : continue
@@ -226,9 +228,9 @@ function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, 
         if carving
             testval = max(outgoing, l, r)
         elseif flops
-            testval = 2.0 ^ (outgoing + between[k]) + l + r
+            testval = 2.0 ^ (outgoing + b) + l + r
         else
-            testval = max(between[k] + outgoing, l, r)
+            testval = max(b + outgoing, l, r)
         end
 
         if testval < best
