@@ -22,7 +22,7 @@ onesum = PSum(1)
 function profileme()
     position_to_idx, idx_to_position = ordergraph(onesum, G; config...);
     onesumval = LinearOrdering.evalorder(onesum, adjacency_matrix(G), idx_to_position)
-    cost, _ = recursive_width(adjacency_matrix(G), position_to_idx, idx_to_position; flops=true)
+    cost, _ = recursive_width(adjacency_matrix(G), position_to_idx, idx_to_position; flops=true, carving=false)
 end
 
 profileme() # Do not profile - for precompilation
