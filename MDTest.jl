@@ -2,7 +2,7 @@ using Coarsening, Graphs, LinearOrdering, MatrixMarket
 
 include("./dynamictreewidth.jl")
 
-fname = "./regular3_32_2_0.mtx"
+fname = "./graphs/regular3_32_2_0.mtx"
 adj = makeadj(mmread(fname))
 G = SimpleGraph(adj);
 config = (
