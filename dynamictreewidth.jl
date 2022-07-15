@@ -193,7 +193,7 @@ function calcbetween(A, position_to_vertex, vertex_to_position, i, j)
 end
 
 #@everywhere
-@everywhere function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, j; carving = false, flops=false)
+function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, j; carving = false, flops=false)
     if i == j
         c = Coarsening.sumcol(A, position_to_vertex[i])
         if flops
@@ -206,8 +206,8 @@ end
     best = Inf
     bestk = -1
     between = calcbetween(A, position_to_vertex, vertex_to_position, i, j)
-    for k in i:(j-1)
-#    Threads.@threads for k in i:(j-1)
+#    for k in i:(j-1)
+    Threads.@threads for k in i:(j-1)
 
 #@distributed for k in i:(j-1)
         v = position_to_vertex[k]

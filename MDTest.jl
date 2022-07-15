@@ -1,10 +1,25 @@
-using Coarsening, Graphs, LinearOrdering, MatrixMarket
+#Threads.nthreads() = 2
+println(Threads.nthreads())
+
+using Coarsening, Graphs, LinearOrdering, MatrixMarket, BenchmarkTools
 
 include("./dynamictreewidth.jl")
 
-fname = "./graphs/regular3_32_2_0.mtx"
+fname = "./graphs/regular3_32_2_0.mtx" #192x192
+#fname = "./graphs/regular5_32_4_2.mtx" #256x256
+
+### New Graphs (Weighted Undirected) ###
+#fname = "./graphs/Plants_10NN.mtx" #stackoverflow error 1600x1600
+#fname = "./graphs/Binaryalphadigs_10NN.mtx" #Jupyter Kerenel keeps dying 1404x1404
+#fname = "./graphs/collins_15NN.mtx" #Jupyter Kernel keeps dying 1000x1000
+#fname = "./graphs/Vehicle_10NN.mtx" #Jupyer Kernel keeps dying 846x846
+#fname = "./graphs/Ecoli_10NN.mtx" #stackoverflow error 336x336
+#fname = "./graphs/YaleA_10NN.mtx" #stackoverdlow error 165x165
+
 adj = makeadj(mmread(fname))
+
 G = SimpleGraph(adj);
+
 config = (
             compat_sweeps=10,
             stride_percent=0.5,
@@ -27,5 +42,5 @@ end
 
 profileme() # Do not profile - for precompilation
 println("START")
-profileme() # Profile this
+@btime profileme() # Profile this
 println("END")
