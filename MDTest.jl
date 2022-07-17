@@ -1,6 +1,3 @@
-#Threads.nthreads() = 2
-println(Threads.nthreads())
-
 using Coarsening, Graphs, LinearOrdering, MatrixMarket, BenchmarkTools
 
 include("./dynamictreewidth.jl")
@@ -41,6 +38,12 @@ function profileme()
 end
 
 profileme() # Do not profile - for precompilation
-println("START")
+print("Number of threads: ")  
+println(Threads.nthreads())
+print("Graph used: ") 
+println(fname)
 @btime profileme() # Profile this
-println("END")
+
+println()
+println()
+

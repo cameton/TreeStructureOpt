@@ -1,0 +1,20 @@
+Number of threads: 1
+Graph used: ./graphs/regular3_32_2_0.mtx
+  836.254 ms (10593813 allocations: 385.47 MiB)
+
+
+Number of threads: 2
+Graph used: ./graphs/regular3_32_2_0.mtx
+  850.543 ms (10602921 allocations: 385.71 MiB)
+
+
+Number of threads: 4
+Graph used: ./graphs/regular3_32_2_0.mtx
+  958.752 ms (11974324 allocations: 422.82 MiB)
+
+
+Number of threads: 8
+Graph used: ./graphs/regular3_32_2_0.mtx
+  1.068 s (13058332 allocations: 451.98 MiB)
+
+
