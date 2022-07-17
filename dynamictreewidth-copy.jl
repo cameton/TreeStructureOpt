@@ -14,6 +14,33 @@ using Coarsening
 
 import LightGraphs
 
+struct leaf
+    idx::Int 
+    v::Int
+end
+
+struct Node
+    lo::Int
+    up::Int 
+    left::Int
+    right::Int
+end 
+
+struct TreeDecomposition
+    lo::Int
+    up::Int
+    width::Int
+    left:Union{TreeDecomposition, Nothing}
+    right::Union{TreeDecomposition, Nothing} 
+    bag::Set{Graphs.SimpleGraphs.SimpleEdge{Int64}}
+end 
+
+struct NewTreeDecomposition
+    tree::Vector{Union{Leaf, Node}}
+    bags::Vector{SortedSet{Int}}
+    widths::Vector{Float64}
+end
+
 function linegraph(G) 
     n = ne(G)
     A = zeros(n, n)
@@ -29,35 +56,11 @@ function linegraph(G)
     return SimpleGraph(A)
 end
 
-struct Leaf
-    idx::Int
-    v::Int
-end
-struct Node
-    lo::Int
-    up::Int
-    left::Int
-    right::Int
-end
-struct NewTreeDecomposition
-    tree::Vector{Union{Leaf, Node}}
-    bags::Vector{SortedSet{Int}}
-    widths::Vector{Float64}
-end
 function NewTreeDecomposition(n)
     tree = Vector{Union{Leaf, Node}}(undef, 2 * n -1)
     bags = Vector{SortedSet{Int}}(undef, 2 * n - 1)
     widths = zeros(2 * n - 1)
     return NewTreeDecomposition(tree, bags, widths)
-end
-
-struct TreeDecomposition
-    lo::Int
-    up::Int
-    width::Int
-    left::Union{TreeDecomposition, Nothing}
-    right::Union{TreeDecomposition, Nothing}
-    bag::Set{Graphs.SimpleGraphs.SimpleEdge{Int64}}
 end
 
 function vectorize_decomp!(bags, tree, parent_idx, td)
@@ -303,8 +306,6 @@ function order_width(G, position_to_vertex, vertex_to_position)
     return tree
 end
 
-using LinearOrdering
-using Coarsening
 
 function makeadj(B)
     n = size(B, 2)
