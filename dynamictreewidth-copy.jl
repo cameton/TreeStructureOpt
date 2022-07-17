@@ -1,5 +1,4 @@
 using Graphs
-import LightGraphs
 using SparseArrays
 using CuthillMcKee: symrcm
 using Random
@@ -9,6 +8,11 @@ using ProgressMeter
 using LinearAlgebra
 using KrylovKit
 using DataStructures
+using LRUCache
+using LinearOrdering 
+using Coarsening
+
+import LightGraphs
 
 function linegraph(G) 
     n = ne(G)
@@ -24,8 +28,6 @@ function linegraph(G)
     end
     return SimpleGraph(A)
 end
-
-tolight(G) = LightGraphs.SimpleGraph(adjacency_matrix(linegraph(G)))
 
 struct Leaf
     idx::Int
@@ -141,9 +143,6 @@ function outgoing_edges(G, incident_edges, position_to_vertex, vertex_to_positio
 end
 
 
-using LRUCache
-using DataStructures
-
 vertex_pair(v, u) = Edge(min(v, u), max(v, u))
 incident_edges(G, v) = (vertex_pair(v, u) for u in neighbors(G, u))
 
@@ -190,7 +189,6 @@ function calcbetween(A, position_to_vertex, vertex_to_position, i, j)
     return between
 end
 
-#@everywhere
 function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, j; carving = false, flops=false)
     if i == j
         c = Coarsening.sumcol(A, position_to_vertex[i])
