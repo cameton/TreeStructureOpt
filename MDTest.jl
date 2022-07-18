@@ -1,6 +1,6 @@
 using Coarsening, Graphs, LinearOrdering, MatrixMarket, BenchmarkTools
 
-include("./dynamictreewidth.jl")
+include("./dynamictreewidth-copy.jl")
 
 fname = "./graphs/regular3_32_2_0.mtx" #192x192
 #fname = "./graphs/regular5_32_4_2.mtx" #256x256

@@ -14,7 +14,7 @@ using Coarsening
 
 import LightGraphs
 
-struct leaf
+struct Leaf
     idx::Int 
     v::Int
 end
@@ -30,7 +30,7 @@ struct TreeDecomposition
     lo::Int
     up::Int
     width::Int
-    left:Union{TreeDecomposition, Nothing}
+    left::Union{TreeDecomposition, Nothing}
     right::Union{TreeDecomposition, Nothing} 
     bag::Set{Graphs.SimpleGraphs.SimpleEdge{Int64}}
 end 
@@ -41,21 +41,6 @@ struct NewTreeDecomposition
     widths::Vector{Float64}
 end
 
-function linegraph(G) 
-    n = ne(G)
-    A = zeros(n, n)
-    for (i, ei) in enumerate(edges(G))
-        for (j, ej) in enumerate(edges(G))
-            vs = Set([ei.src, ei.dst, ej.src, ej.dst])
-            if length(vs) == 3
-                A[i, j] = 1.0
-                A[j, i] = 1.0
-            end
-        end
-    end
-    return SimpleGraph(A)
-end
-
 function NewTreeDecomposition(n)
     tree = Vector{Union{Leaf, Node}}(undef, 2 * n -1)
     bags = Vector{SortedSet{Int}}(undef, 2 * n - 1)
@@ -63,6 +48,7 @@ function NewTreeDecomposition(n)
     return NewTreeDecomposition(tree, bags, widths)
 end
 
+#=
 function vectorize_decomp!(bags, tree, parent_idx, td)
     if isnothing(td)
         return bags, tree
@@ -82,7 +68,7 @@ function vectorize_decomp(td)
     vectorize_decomp!(bags, tree, 1, td.left)
     return vectorize_decomp!(bags, tree, 1, td.right)
 end
-
+=#
 
 function check_td(bags, tree, g)
     bigbag = union(bags...)
