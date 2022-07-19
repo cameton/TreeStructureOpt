@@ -48,7 +48,7 @@ function NewTreeDecomposition(n)
     return NewTreeDecomposition(tree, bags, widths)
 end
 
-#=
+
 function vectorize_decomp!(bags, tree, parent_idx, td)
     if isnothing(td)
         return bags, tree
@@ -68,7 +68,7 @@ function vectorize_decomp(td)
     vectorize_decomp!(bags, tree, 1, td.left)
     return vectorize_decomp!(bags, tree, 1, td.right)
 end
-=#
+
 
 function check_td(bags, tree, g)
     bigbag = union(bags...)
@@ -178,7 +178,10 @@ function calcbetween(A, position_to_vertex, vertex_to_position, i, j)
     return between
 end
 
-function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, j; carving = false, flops=false)
+### Not acutally recursion, just keeping the name for conventioni
+
+function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, j; carving = false, flops = false) 
+    
     if i == j
         c = Coarsening.sumcol(A, position_to_vertex[i])
         if flops
@@ -186,60 +189,64 @@ function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, 
         end
         return c, i
     end
+
     n = length(position_to_vertex)
-    outgoing = _weight_to_intervals(A, position_to_vertex, vertex_to_position, i:j, (1:(i-1), (j+1):n) )
+    outgoing = _weight_to_intervals(A, position_to_vertex, vertex_to_position, i:j, (1:(i-1), (j+1):n))
     best = Inf
     bestk = -1
     between = calcbetween(A, position_to_vertex, vertex_to_position, i, j)
-    for k in i:(j-1)
-#    Threads.@threads for k in i:(j-1)
 
+    for k in i:(j-1)
         v = position_to_vertex[k]
         b = between[k - i + 1]
 
         if !carving
             b + outgoing < best ? nothing : continue
-        end
+        end 
 
-        (l, _) = get!(cache, (i, k)) do
-            _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, k; flops=flops, carving=carving)
-        end
+        # What to do with this 
+        (l, _) = get!(cache, (i, k)) do 
+            _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, k; carving=carving, flops = flops)
+        end 
 
-        if flops
-            2.0 ^ ( b + outgoing) + l < best ? nothing : continue
-        end
+        if flops 
+            2.0 ^ (b + outgoing) + l < best ? nothing : continue 
+        end 
 
         l < best ? nothing : continue
-
-        (r, _) = get!(cache, (k+1, j)) do
-            _recursive_width!(cache, A, position_to_vertex, vertex_to_position, k+1, j; flops=flops, carving=carving)
+        
+        # What to do with this 
+        (r, _) = get!(cache, (k+1, j)) do 
+            _recursive_width!(cache, A, position_to_vertex, vertex_to_position, k+1, j; carving = carving, flops = flops)
         end
 
         if carving
             testval = max(outgoing, l, r)
         elseif flops
-            testval = 2.0 ^ (outgoing + b) + l + r
-        else
+            testval =2.0 ^ (outgoing +b) +l + r
+        else 
             testval = max(b + outgoing, l, r)
-        end
+        end 
 
-        if testval < best
-            best = testval 
+        if testval < best 
+            best = testval
             bestk = k
         end
     end
     return best, bestk
-end
+### Recursion --> switch to not recurision.
+end 
 
 function recursive_width(A, position_to_vertex, vertex_to_position, i=1, j=size(A, 1); maxsize=2^28, flops=false, carving=false)
     cache = LRU{Tuple{Int, Int}, Tuple{Float64, Int}}(; maxsize=maxsize, by=sizeof)
     return _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, j; flops=flops, carving=carving)
 end
+
 function recursive_width_td!(cache, td, idx, A, position_to_vertex, vertex_to_position, i, j)
     if i == j
-
     end
 end
+
 function recursive_width_td(A, position_to_vertex, vertex_to_position, i=1, j=size(A, 1); maxsize=2^28)
     cache = LRU{Tuple{Int, Int}, Tuple{eltype(A), Int}}(; maxsize=maxsize, by=sizeof)
     td = NewTreeDecomposition(length(position_to_vertex))
