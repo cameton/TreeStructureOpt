@@ -137,6 +137,8 @@ incident_edges(G, v) = (vertex_pair(v, u) for u in neighbors(G, u))
 
 function _weight_to_intervals(A, position_to_vertex, vertex_to_position, interval, to_intervals)
     acc = zero(eltype(A))
+    #Here allocations go up making speed signifcantly decrease
+    #Threads.@threads for c in interval
     for c in interval
         acc += _weight_to_intervals(A, vertex_to_position, position_to_vertex[c], to_intervals)
     end
@@ -196,7 +198,7 @@ function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, 
     bestk = -1
     between = calcbetween(A, position_to_vertex, vertex_to_position, i, j)
 
-    for k in i:(j-1)
+    Threads.@threads for k in i:(j-1)
         v = position_to_vertex[k]
         b = between[k - i + 1]
 
@@ -265,7 +267,9 @@ function recursion_opt(cache, G, incident_edges, position_to_vertex, vertex_to_p
     best_bag = Set()
     best_left = nothing
     best_right = nothing
-    for k in i:(j-1)
+    #Adding threads here does cause speed up
+    Threads.@threads for k in i:(j-1)
+    #for k in i:(j-1)
         left_tree = get!(cache, (i, k)) do
             recursion_opt(cache, G, incident_edges, position_to_vertex, vertex_to_position, i, k)
         end
@@ -287,9 +291,13 @@ end
 function order_width(G, position_to_vertex, vertex_to_position)
     cache = LRU{Tuple{Int, Int}, TreeDecomposition}(; maxsize=2^28, by=sizeof)
     incident_edges = []
+    # Threads slow down here
+    #Threads.@threads for v in vertices(G)
     for v in vertices(G)
         push!(incident_edges, Graphs.SimpleGraphs.SimpleEdge{Int64}[])
     end
+    # Threads slow down here
+    #Threads.@threads for e in edges(G)
     for e in edges(G)
         push!(incident_edges[e.src], e)
         push!(incident_edges[e.dst], e)
@@ -303,6 +311,7 @@ end
 function makeadj(B)
     n = size(B, 2)
     A = zeros(n, n)
+    #Threads here cause a slwo down here
     for i in axes(B, 1)
         nz = findall(x -> x != 0, B[i, :])
         A[nz[1], nz[2]] = 1.0
