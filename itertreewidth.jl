@@ -69,8 +69,9 @@ function _iter_width!(table, between, A, pmap; cost=tsize, merge=max)
     n = length(pmap.p_to_v)
     fill!(between, 0)
 
-    for win_size in 2:n
+    Threads.@threads for win_size in 2:n
         for i in 1:(n-win_size+1)
+        #Threads.@threads for i in 1:(n-win_size+1)
             j = i + win_size - 1
             outgoing, between = calc_vals!(between, A, pmap, i, j)
             best = Inf
@@ -90,5 +91,16 @@ function _iter_width!(table, between, A, pmap; cost=tsize, merge=max)
         end
     end
     return table
+end
+
+function makeadj(B)
+    n = size(B, 2)
+    A = zeros(n, n)
+    for i in axes(B, 1) 
+        nz = findall(x -> x != 0, B[i, :])
+        A[nz[1], nz[2]] = 1.0
+        A[nz[2], nz[1]] = 1.0 
+    end
+    return A
 end
 

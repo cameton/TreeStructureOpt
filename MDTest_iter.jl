@@ -1,9 +1,9 @@
-using Coarsening, Graphs, LinearOrdering, MatrixMarket, BenchmarkTools
+using Coarsening, Graphs, LinearOrdering, MatrixMarket, BenchmarkTools, Profile
 
 include("./itertreewidth.jl")
-include("./dynamictreewidth.jl")
+#include("./dynamictreewidth.jl")
 
-fname = "./graphs/regular3_32_2_0.mtx" #192x192
+#fname = "./graphs/regular3_32_2_0.mtx" #192x192
 #fname = "./graphs/regular5_32_4_2.mtx" #256x256
 
 ### New Graphs (Weighted Undirected) ###
@@ -50,7 +50,8 @@ println(Threads.nthreads())
 print("Graph used: ") 
 println(fname)
 @btime profileme() # Profile this
-
+#@profile profileme()
+#Profile.print()
 println()
 println()
 
