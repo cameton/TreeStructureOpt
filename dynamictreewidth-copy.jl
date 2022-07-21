@@ -182,8 +182,11 @@ end
 
 ### Not acutally recursion, just keeping the name for conventioni
 
+cache = LRU{Tuple{Int, Int}, Tuple{eltype(A), Int}}(; maxsize=maxsize, by=sizeof)
+
 function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, j; carving = false, flops = false) 
     
+
     if i == j
         c = Coarsening.sumcol(A, position_to_vertex[i])
         if flops
@@ -198,7 +201,8 @@ function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, 
     bestk = -1
     between = calcbetween(A, position_to_vertex, vertex_to_position, i, j)
 
-    Threads.@threads for k in i:(j-1)
+    #Threads.@threads for k in i:(j-1)
+    for k in i:(j-1)
         v = position_to_vertex[k]
         b = between[k - i + 1]
 
@@ -211,7 +215,10 @@ function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, 
             _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, k; carving=carving, flops = flops)
         end 
 =#
-        for left_node in i:k
+        Threads.@threads for left_node in i:k
+            
+            (l, _) = get!(cache, (i, k))
+
             if i == k 
                 c = Coarsening.sumcol(A, position_to_vertex[i])
                 if flops 
@@ -222,7 +229,8 @@ function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, 
 
             v = position_to_vertex[left_node]
             b = between[left_node - i + 1] 
-
+            
+            
             if !carving 
                 b + outgoing < best ? nothing : continue 
             end 
@@ -232,8 +240,11 @@ function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, 
             end 
 
             l < best ? nothing : continue 
+            
+            Threads.@threads for right_node in (k+1):j 
+                
+                (r, _) = get!(cache, (k+1, j))
 
-            for right_node in (k+1):j 
                 if (k+1) == j 
                     c = Coarsening.sumcol(A, position_to_vertex[k+1])
                     if flops 
@@ -244,7 +255,7 @@ function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, 
 
                 v = position_to_vertex[right_node]
                 b = between[right_node - k + 2]
-
+            
                 if !carving 
                     b + outgoing < best ? nothing : continue
                 end 
