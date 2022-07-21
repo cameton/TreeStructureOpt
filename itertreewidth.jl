@@ -49,6 +49,7 @@ end
 function calc_vals!(between, A, pmap, i, j) # GPU parallelization on this might be helpful/useful
     outgoing = zero(eltype(A))
     outgoing, _, between[i] = weighted_degree(A, pmap, i, i, j)
+    #Threads.@threads for k in (i + 1):j
     for k in (i + 1):j
         out, left, right = weighted_degree(A, pmap, i, k, j)
         outgoing += out
@@ -69,13 +70,13 @@ function _iter_width!(table, between, A, pmap; cost=tsize, merge=max)
     n = length(pmap.p_to_v)
     fill!(between, 0)
 
-    Threads.@threads for win_size in 2:n
-        for i in 1:(n-win_size+1)
-        #Threads.@threads for i in 1:(n-win_size+1)
+    for win_size in 2:n
+        Threads.@threads for i in 1:(n-win_size+1)
             j = i + win_size - 1
             outgoing, between = calc_vals!(between, A, pmap, i, j)
             best = Inf
             bestk = -1
+            #Threads.@threads for k in i:(j-1)
             for k in i:(j-1)
                 v = pmap.p_to_v[k]
                 b = between[k]
