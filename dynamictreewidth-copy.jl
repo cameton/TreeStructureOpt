@@ -206,11 +206,57 @@ function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, 
             b + outgoing < best ? nothing : continue
         end 
 
-        # What to do with this 
+       #= # What to do with this 
         (l, _) = get!(cache, (i, k)) do 
             _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, k; carving=carving, flops = flops)
         end 
+=#
+        for left_node in i:k
+            if i == k 
+                c = Coarsening.sumcol(A, position_to_vertex[i])
+                if flops 
+                    return 2.0 ^ c, i
+                end
+                return c, i
+            end 
 
+            v = position_to_vertex[left_node]
+            b = between[left_node - i + 1] 
+
+            if !carving 
+                b + outgoing < best ? nothing : continue 
+            end 
+            
+            if flops 
+                2.0 ^ (b + outgoing) + l < best ? nothing : continue
+            end 
+
+            l < best ? nothing : continue 
+
+            for right_node in (k+1):j 
+                if (k+1) == j 
+                    c = Coarsening.sumcol(A, position_to_vertex[k+1])
+                    if flops 
+                        return 2.0^ c, (k+1)
+                    end
+                    return c, (k+1)
+                end 
+
+                v = position_to_vertex[right_node]
+                b = between[right_node - k + 2]
+
+                if !carving 
+                    b + outgoing < best ? nothing : continue
+                end 
+
+                if flops 
+                    2.0 ^ (b + outgoing) + l < best ? nothing : continue 
+                end 
+
+                l < best ? nothing : continue
+            end
+        end 
+        #=
         if flops 
             2.0 ^ (b + outgoing) + l < best ? nothing : continue 
         end 
@@ -221,7 +267,7 @@ function _recursive_width!(cache, A, position_to_vertex, vertex_to_position, i, 
         (r, _) = get!(cache, (k+1, j)) do 
             _recursive_width!(cache, A, position_to_vertex, vertex_to_position, k+1, j; carving = carving, flops = flops)
         end
-
+=#
         if carving
             testval = max(outgoing, l, r)
         elseif flops
