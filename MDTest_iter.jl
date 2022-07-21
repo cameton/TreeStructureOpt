@@ -17,6 +17,10 @@ fname = "./graphs/regular3_32_2_0.mtx" #192x192
 adj = makeadj(mmread(fname))
 
 G = SimpleGraph(adj);
+n = nv(G)
+table = fill((0.0, 0), (n, n))
+between = zeros(n)
+
 
 config = (
             compat_sweeps=10,
@@ -31,12 +35,13 @@ config = (
 )
 onesum = PSum(1)
 
+position_to_idx, idx_to_position = ordergraph(onesum, G; config...);
+pmap = PositionMap(position_to_idx, idx_to_position)
+onesumval = LinearOrdering.evalorder(onesum, adjacency_matrix(G), idx_to_position)
+
 # I think the use of global variables might mess with performance, but whatever for rn
 function profileme()
-    position_to_idx, idx_to_position = ordergraph(onesum, G; config...);
-    pmap = PositionMap(position_to_idx, idx_to_position)
-    onesumval = LinearOrdering.evalorder(onesum, adjacency_matrix(G), idx_to_position)
-    cost, _ = iter_width(adjacency_matrix(G), pmap)[1, length(position_to_idx)]
+    cost, _ = _iter_width!(table, between, adjacency_matrix(G), pmap)[1, length(position_to_idx)]
 end
 
 profileme() # Do not profile - for precompilation

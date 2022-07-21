@@ -60,13 +60,14 @@ end
 function iter_width(A, pmap; cost=tsize, merge=max)
     n = size(A, 1)
     table = fill((0.0, 0), (n, n))
-    return _iter_width!(table, A, pmap; cost=cost, merge=merge)
+    between = zeros(n)
+    return _iter_width!(table, between, A, pmap; cost=cost, merge=merge)
 end
 
-function _iter_width!(table, A, pmap; cost=tsize, merge=max)
+function _iter_width!(table, between, A, pmap; cost=tsize, merge=max)
     _init_table!(table, A, pmap)
     n = length(pmap.p_to_v)
-    between = zeros(n)
+    fill!(between, 0)
 
     for win_size in 2:n
         for i in 1:(n-win_size+1)
