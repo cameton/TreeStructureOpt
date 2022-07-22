@@ -3,8 +3,23 @@ using Coarsening, Graphs, LinearOrdering, MatrixMarket, BenchmarkTools, Profile
 include("./itertreewidth.jl")
 #include("./dynamictreewidth.jl")
 
-fname = "./graphs/regular3_32_2_0.mtx" #192x192
-#fname = "./graphs/regular5_32_4_2.mtx" #256x256
+#fname = "./graphs/regular3_32_2_0.mtx" #192x192
+#fname = "./graphs/regular3_32_2_1.mtx"
+#fname = "./graphs/regular3_32_2_2.mtx"
+#fname = "./graphs/regular3_32_2_3.mtx"
+#fname = "./graphs/regular3_32_2_4.mtx"
+
+#fname = "./graphs/regular4_32_3_0.mtx"
+#fname = "./graphs/regular4_32_3_1.mtx"
+#fname = "./graphs/regular4_32_3_2.mtx"
+#fname = "./graphs/regular4_32_3_3.mtx"
+#fname = "./graphs/regular4_32_3_4.mtx"
+
+#fname = "./graphs/regular5_32_4_0.mtx"  #256x256
+#fname = "./graphs/regular5_32_4_1.mtx"
+#fname = "./graphs/regular5_32_4_2.mtx" 
+#fname = "./graphs/regular5_32_4_3.mtx"
+fname = "./graphs/regular5_32_4_4.mtx"
 
 ### New Graphs (Weighted Undirected) ###
 #fname = "./graphs/Plants_10NN.mtx" #stackoverflow error 1600x1600
