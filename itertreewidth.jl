@@ -70,6 +70,7 @@ end
 function calc_vals!(between, A, pmap, i, j) # GPU parallelization on this might be helpful/useful
     outgoing = zero(eltype(A))
     outgoing, _, between[i] = weighted_degree(A, pmap, i, i, j)
+    #Threads.@threads for k in (i + 1):j
     for k in (i + 1):j
         out, left, right = weighted_degree(A, pmap, i, k, j)
         outgoing += out

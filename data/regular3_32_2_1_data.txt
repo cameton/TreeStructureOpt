@@ -1,0 +1,45 @@
+Number of threads: 1
+Graph used: ./graphs/regular3_32_2_1.mtx
+  39.187 ms (1236170 allocations: 20.11 MiB)
+
+
+Number of threads: 2
+Graph used: ./graphs/regular3_32_2_1.mtx
+  23.425 ms (1237134 allocations: 20.19 MiB)
+
+
+Number of threads: 4
+Graph used: ./graphs/regular3_32_2_1.mtx
+  14.424 ms (1239132 allocations: 20.36 MiB)
+
+
+Number of threads: 8
+Graph used: ./graphs/regular3_32_2_1.mtx
+  11.451 ms (1242999 allocations: 20.69 MiB)
+
+
+Number of threads: 16
+Graph used: ./graphs/regular3_32_2_1.mtx
+  22.766 ms (1250576 allocations: 21.35 MiB)
+
+
+Number of threads: 32
+Graph used: ./graphs/regular3_32_2_1.mtx
+  40.369 ms (1265848 allocations: 22.68 MiB)
+
+
+Number of threads: 64
+Graph used: ./graphs/regular3_32_2_1.mtx
+  59.737 ms (1296355 allocations: 25.34 MiB)
+
+
+Number of threads: 128
+Graph used: ./graphs/regular3_32_2_1.mtx
+  145.635 ms (1357463 allocations: 30.66 MiB)
+
+
+Number of threads: 256
+Graph used: ./graphs/regular3_32_2_1.mtx
+  472.842 ms (1479723 allocations: 41.30 MiB)
+
+
