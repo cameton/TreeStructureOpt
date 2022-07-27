@@ -3,8 +3,8 @@ using Coarsening, Graphs, LinearOrdering, MatrixMarket, BenchmarkTools, Profile
 include("./itertreewidth.jl")
 #include("./dynamictreewidth.jl")
 
-#fname = "./graphs/regular3_32_2_0.mtx" #192x192
-#fname = "./graphs/regular5_32_4_2.mtx" #256x256
+fname = "./graphs/regular3_32_2_0.mtx" #192x192
+# fname = "./graphs/regular5_32_4_2.mtx" #256x256
 
 ### New Graphs (Weighted Undirected) ###
 #fname = "./graphs/Plants_10NN.mtx" #stackoverflow error 1600x1600
@@ -18,7 +18,7 @@ adj = makeadj(mmread(fname))
 
 G = SimpleGraph(adj);
 n = nv(G)
-table = fill((0.0, 0), (n, n))
+table = Table(Tuple{Float64, Int}, n)
 between = zeros(n)
 
 
@@ -38,20 +38,23 @@ onesum = PSum(1)
 position_to_idx, idx_to_position = ordergraph(onesum, G; config...);
 pmap = PositionMap(position_to_idx, idx_to_position)
 onesumval = LinearOrdering.evalorder(onesum, adjacency_matrix(G), idx_to_position)
+A = adjacency_matrix(G)
 
 # I think the use of global variables might mess with performance, but whatever for rn
 function profileme()
-    cost, _ = _iter_width!(table, between, adjacency_matrix(G), pmap)[1, length(position_to_idx)]
+    cost, _ = iter_width!(table, between, A, pmap).idata[1][end]
 end
 
 profileme() # Do not profile - for precompilation
-print("Number of threads: ")  
-println(Threads.nthreads())
-print("Graph used: ") 
-println(fname)
-@btime profileme() # Profile this
+Profile.clear_malloc_data()
+profileme() # Do not profile - for precompilation
+# print("Number of threads: ")  
+# println(Threads.nthreads())
+# print("Graph used: ") 
+# println(fname)
+# @btime profileme() # Profile this
 #@profile profileme()
 #Profile.print()
-println()
-println()
+# println()
+# println()
 

@@ -2,21 +2,42 @@ using SparseArrays
 using Random
 using LinearAlgebra
 using DataStructures
+using FLoops
 
 struct PositionMap
     p_to_v::Vector{Int} # position to vertex
     v_to_p::Vector{Int} # vertex to position
 end
 
+struct Table{T}
+    idata::Vector{Vector{T}}
+    jdata::Vector{Vector{T}}
+end
+
+function Table(T, n)
+    idata = [ Vector{T}(undef, n - i + 1) for i in 1:n ]
+    jdata = [ Vector{T}(undef, n - i + 1) for i in n:-1:1 ]
+    return Table{T}(idata, jdata)
+end
+
+function zerotable!(table)
+    for vec in table.idata
+        fill!(vec, (0, 0.0))
+    end
+    for vec in table.jdata
+        fill!(vec, (0, 0.0))
+    end
+end
+
 function _init_table!(table, A, pmap)
-    fill!(table, (0.0, 1))
+    zerotable!(table)
     vals = nonzeros(A)
-    for p in size(table, 1)
+    for p in axes(A, 2)
         acc = 0.0
         for idx in nzrange(A, pmap.p_to_v[p])
             acc += vals[idx]
         end
-        table[p] = (acc, p)
+        table.idata[p][1] = table.jdata[p][1] = (acc, p)
     end
     return table
 end
@@ -54,42 +75,54 @@ function calc_vals!(between, A, pmap, i, j) # GPU parallelization on this might 
         outgoing += out
         between[k] = between[k - 1] + right - left
     end
-    return outgoing, between
+    return outgoing
 end
 
 function iter_width(A, pmap; cost=tsize, merge=max)
     n = size(A, 1)
-    table = fill((0.0, 0), (n, n))
+    table = Table(Tuple{Float64, Int}, n)
     between = zeros(n)
     return _iter_width!(table, between, A, pmap; cost=cost, merge=merge)
 end
 
-function _iter_width!(table, between, A, pmap; cost=tsize, merge=max)
+function find_split(cost, merge, ivec, jvec, between, outgoing, i, j)
+    best = Inf; bestk = 0
+    for k in i:(j-1)
+        b = between[k]
+
+        c = cost(outgoing, b)
+        c = merge(merge(c, ivec[k - i + 1][1]), jvec[j - k][1])
+        if c < best
+            best = c
+            bestk = k
+        end
+    end
+    return best, bestk
+end
+
+function _iter_width!(table, between, A, pmap, cost, merge)
+    for win_size in 2:n
+        for shift in 1:win_size
+            for i in shift:win_size:(n-win_size+1)
+                j = i + win_size - 1
+                ivec = table.idata[i] 
+                jvec = table.jdata[j]
+                outgoing = calc_vals!(between, A, pmap, i, j)
+
+                ivec[win_size] = jvec[win_size] = find_split(cost, merge, ivec, jvec, between, outgoing, i, j)
+            end
+        end
+    end
+    return table
+end
+
+function iter_width!(table, between, A, pmap; cost=tsize, merge=max)
     _init_table!(table, A, pmap)
     n = length(pmap.p_to_v)
     fill!(between, 0)
 
-    Threads.@threads for win_size in 2:n
-        for i in 1:(n-win_size+1)
-        #Threads.@threads for i in 1:(n-win_size+1)
-            j = i + win_size - 1
-            outgoing, between = calc_vals!(between, A, pmap, i, j)
-            best = Inf
-            bestk = -1
-            for k in i:(j-1)
-                v = pmap.p_to_v[k]
-                b = between[k]
+    _iter_width!(table, between, A, pmap, cost, merge)
 
-                c = cost(outgoing, b)
-                c = merge(merge(c, table[i, k][1]), table[k+1, j][1])
-                if c < best
-                    best = c
-                    bestk = k
-                end
-            end
-            table[i, j] = (best, bestk)
-        end
-    end
     return table
 end
 
