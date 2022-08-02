@@ -103,7 +103,7 @@ end
 
 function _iter_width!(table, between, A, pmap, cost, merge)
     for win_size in 2:n
-        for shift in 1:win_size
+        Threads.@threads for shift in 1:win_size
             for i in shift:win_size:(n-win_size+1)
                 j = i + win_size - 1
                 ivec = table.idata[i] 

@@ -1,0 +1,62 @@
+MethodInstance for calc_vals!(::Vector{Float64}, ::SparseMatrixCSC{Int64, Int64}, ::PositionMap, ::Int64, ::Int64)
+  from calc_vals!(between, A, pmap, i, j) in Main at /Users/spicyboiii/TreeStructureOpt/itertreewidth_new.jl:71
+Arguments
+  #self#::Core.Const(calc_vals!)
+  between::Vector{Float64}
+  A::SparseMatrixCSC{Int64, Int64}
+  pmap::PositionMap
+  i::Int64
+  j::Int64
+Locals
+  @_7::UNION{NOTHING, TUPLE{INT64, INT64}}
+  @_8::Int64
+  outgoing::Int64
+  @_10::Int64
+  k::Int64
+  right::Int64
+  left::Int64
+  out::Int64
+Body::Int64
+1 ─ %1  = Main.eltype(A)::Core.Const(Int64)
+│         (outgoing = Main.zero(%1))
+│   %3  = Main.weighted_degree(A, pmap, i, i, j)::Tuple{Int64, Int64, Int64}
+│   %4  = Base.indexed_iterate(%3, 1)::Core.PartialStruct(Tuple{Int64, Int64}, Any[Int64, Core.Const(2)])
+│         (outgoing = Core.getfield(%4, 1))
+│         (@_8 = Core.getfield(%4, 2))
+│   %7  = Base.indexed_iterate(%3, 2, @_8::Core.Const(2))::Core.PartialStruct(Tuple{Int64, Int64}, Any[Int64, Core.Const(3)])
+│         Core.getfield(%7, 1)
+│         (@_8 = Core.getfield(%7, 2))
+│   %10 = Base.indexed_iterate(%3, 3, @_8::Core.Const(3))::Core.PartialStruct(Tuple{Int64, Int64}, Any[Int64, Core.Const(4)])
+│   %11 = Core.getfield(%10, 1)::Int64
+│         Base.setindex!(between, %11, i)
+│   %13 = (i + 1)::Int64
+│   %14 = (%13:j)::UnitRange{Int64}
+│         (@_7 = Base.iterate(%14))
+│   %16 = (@_7 === nothing)::Bool
+│   %17 = Base.not_int(%16)::Bool
+└──       goto #4 if not %17
+2 ┄ %19 = @_7::Tuple{Int64, Int64}
+│         (k = Core.getfield(%19, 1))
+│   %21 = Core.getfield(%19, 2)::Int64
+│   %22 = Main.weighted_degree(A, pmap, i, k, j)::Tuple{Int64, Int64, Int64}
+│   %23 = Base.indexed_iterate(%22, 1)::Core.PartialStruct(Tuple{Int64, Int64}, Any[Int64, Core.Const(2)])
+│         (out = Core.getfield(%23, 1))
+│         (@_10 = Core.getfield(%23, 2))
+│   %26 = Base.indexed_iterate(%22, 2, @_10::Core.Const(2))::Core.PartialStruct(Tuple{Int64, Int64}, Any[Int64, Core.Const(3)])
+│         (left = Core.getfield(%26, 1))
+│         (@_10 = Core.getfield(%26, 2))
+│   %29 = Base.indexed_iterate(%22, 3, @_10::Core.Const(3))::Core.PartialStruct(Tuple{Int64, Int64}, Any[Int64, Core.Const(4)])
+│         (right = Core.getfield(%29, 1))
+│         (outgoing = outgoing + out)
+│   %32 = (k - 1)::Int64
+│   %33 = Base.getindex(between, %32)::Float64
+│   %34 = (%33 + right)::Float64
+│   %35 = (%34 - left)::Float64
+│         Base.setindex!(between, %35, k)
+│         (@_7 = Base.iterate(%14, %21))
+│   %38 = (@_7 === nothing)::Bool
+│   %39 = Base.not_int(%38)::Bool
+└──       goto #4 if not %39
+3 ─       goto #2
+4 ┄       return outgoing
+

@@ -1,0 +1,140 @@
+        - using SparseArrays
+        - using Random
+        - using LinearAlgebra
+        - using DataStructures
+        - using FLoops
+        - 
+        - struct PositionMap
+        0     p_to_v::Vector{Int} # position to vertex
+        -     v_to_p::Vector{Int} # vertex to position
+        - end
+        - 
+        - struct Table{T}
+        0     idata::Vector{Vector{T}}
+        -     jdata::Vector{Vector{T}}
+        - end
+        - 
+        - function Table(T, n)
+        0     idata = [ Vector{T}(undef, n - i + 1) for i in 1:n ]
+        0     jdata = [ Vector{T}(undef, n - i + 1) for i in n:-1:1 ]
+        0     return Table{T}(idata, jdata)
+        - end
+        - 
+        - function zerotable!(table)
+        0     for vec in table.idata
+        0         fill!(vec, (0, 0.0))
+        -     end
+        0     for vec in table.jdata
+        0         fill!(vec, (0, 0.0))
+        -     end
+        - end
+        - 
+        - function _init_table!(table, A, pmap)
+        0     zerotable!(table)
+        0     vals = nonzeros(A)
+        0     for p in axes(A, 2)
+        -         acc = 0.0
+        0         for idx in nzrange(A, pmap.p_to_v[p])
+        0             acc += vals[idx]
+        -         end
+        0         table.idata[p][1] = table.jdata[p][1] = (acc, p)
+        -     end
+        0     return table
+        - end
+        - 
+        - # Costs
+        - tsize(outgoing, _) = outgoing
+        - tops(outgoing, shared) = outgoing + shared
+        - 
+        - # Merge
+        - log2sumexp2(x, y) = max(x, y) + log1p(exp2(min(x, y) - max(x, y))) / log(2)
+        - 
+        - function weighted_degree(A, pmap, i, k, j)
+        -     rows = rowvals(A)
+        -     vals = nonzeros(A)
+        -     left = right = out = zero(eltype(A))
+        -     v = pmap.p_to_v[k]
+        -     for idx in nzrange(A, v)
+        -         r = pmap.v_to_p[rows[idx]]
+        -         if !(i <= r <= j)
+        -             out += vals[idx]
+        -         elseif i <= r < k
+        -             left += vals[idx]
+        -         elseif k < r <= j
+        -             right += vals[idx]
+        -         end
+        -     end
+        -     return out, left, right
+        - end
+        - 
+        - function calc_vals!(between, A, pmap, i, j) # GPU parallelization on this might be helpful/useful
+        -     outgoing = zero(eltype(A))
+    37728     outgoing, _, between[i] = weighted_degree(A, pmap, i, i, j)
+   100096     for k in (i + 1):j
+  3835008         out, left, right = weighted_degree(A, pmap, i, k, j)
+    25328         outgoing += out
+   501792         between[k] = between[k - 1] + right - left
+        -     end
+     1216     return outgoing
+        - end
+        - 
+        - function iter_width(A, pmap; cost=tsize, merge=max)
+        -     n = size(A, 1)
+        -     table = Table(Tuple{Float64, Int}, n)
+        -     between = zeros(n)
+        -     return _iter_width!(table, between, A, pmap; cost=cost, merge=merge)
+        - end
+        - 
+        - function find_split(cost, merge, ivec, jvec, between, outgoing, i, j)
+        -     best = Inf; bestk = 0
+        -     for k in i:(j-1)
+        -         b = between[k]
+        - 
+        -         c = cost(outgoing, b)
+        -         c = merge(merge(c, ivec[k - i + 1][1]), jvec[j - k][1])
+        -         if c < best
+        -             best = c
+        -             bestk = k
+        -         end
+        -     end
+        -     return best, bestk
+        - end
+        - 
+        - function _iter_width!(table, between, A, pmap, cost, merge)
+      512     for win_size in 2:n
+        -         #@floop for shift in 1:win_size
+    97856         for shift in 1:win_size
+ 40314848             @floop for i in shift:win_size:(n-win_size+1)
+        -                 j = i + win_size - 1
+        -                 ivec = table.idata[i] 
+        -                 jvec = table.jdata[j]
+        -                 outgoing = calc_vals!(between, A, pmap, i, j)
+        - 
+        -                 ivec[win_size] = jvec[win_size] = find_split(cost, merge, ivec, jvec, between, outgoing, i, j)
+        -             end
+        -         end
+        -     end
+      256     return table
+        - end
+        - 
+        - function iter_width!(table, between, A, pmap; cost=tsize, merge=max)
+      896     _init_table!(table, A, pmap)
+        -     n = length(pmap.p_to_v)
+        -     fill!(between, 0)
+        - 
+        -     _iter_width!(table, between, A, pmap, cost, merge)
+        - 
+        -     return table
+        - end
+        - 
+        - function makeadj(B)
+        0     n = size(B, 2)
+        0     A = zeros(n, n)
+        0     for i in axes(B, 1) 
+        0         nz = findall(x -> x != 0, B[i, :])
+        0         A[nz[1], nz[2]] = 1.0
+        0         A[nz[2], nz[1]] = 1.0 
+        -     end
+        0     return A
+        - end
+        - 

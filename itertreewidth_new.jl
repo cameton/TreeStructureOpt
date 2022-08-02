@@ -3,6 +3,8 @@ using Random
 using LinearAlgebra
 using DataStructures
 using FLoops
+using InteractiveUtils
+using Traceur
 
 struct PositionMap
     p_to_v::Vector{Int} # position to vertex
@@ -70,6 +72,7 @@ end
 function calc_vals!(between, A, pmap, i, j) # GPU parallelization on this might be helpful/useful
     outgoing = zero(eltype(A))
     outgoing, _, between[i] = weighted_degree(A, pmap, i, i, j)
+    # shoots memory allocations high, which slows things down
     for k in (i + 1):j
         out, left, right = weighted_degree(A, pmap, i, k, j)
         outgoing += out
@@ -102,12 +105,16 @@ end
 
 function _iter_width!(table, between, A, pmap, cost, merge)
     for win_size in 2:n
-        for shift in 1:win_size
+        @floop for shift in 1:win_size
+        #for shift in 1:win_size
+            # The most inner loop calls the outgoing functionality which causes the huge memory overhead 
             for i in shift:win_size:(n-win_size+1)
                 j = i + win_size - 1
                 ivec = table.idata[i] 
                 jvec = table.jdata[j]
-                outgoing = calc_vals!(between, A, pmap, i, j)
+                #outgoing = @code_warntype calc_vals!(between, A, pmap, i, j)
+                
+                outgoing = calc_vals!(between, A, pmap, i, j) 
 
                 ivec[win_size] = jvec[win_size] = find_split(cost, merge, ivec, jvec, between, outgoing, i, j)
             end
