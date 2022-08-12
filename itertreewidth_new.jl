@@ -113,7 +113,7 @@ function _iter_width!(table, between, A, pmap, cost, merge)
                 ivec = table.idata[i] 
                 jvec = table.jdata[j]
                 #outgoing = @code_warntype calc_vals!(between, A, pmap, i, j)
-                
+                #outgoing = @trace(calc_vals!(between, A, pmap, i, j), maxdepth=2)
                 outgoing = calc_vals!(between, A, pmap, i, j) 
 
                 ivec[win_size] = jvec[win_size] = find_split(cost, merge, ivec, jvec, between, outgoing, i, j)

@@ -1,8 +1,8 @@
 using Coarsening, Graphs, LinearOrdering, MatrixMarket, BenchmarkTools, Profile
 
-#include("./itertreewidth.jl")
+include("./itertreewidth.jl")
 #include("./dynamictreewidth.jl")
-include("./itertreewidth_new.jl")
+#include("./itertreewidth_new.jl")
 
 fname = "./graphs/regular3_32_2_0.mtx" #192x192
 #fname = "./graphs/regular3_32_2_1.mtx"
